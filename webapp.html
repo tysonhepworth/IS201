@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basketball Shooting Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0b1020, #1d3557);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      font-size: 2.2rem;
+      text-align: center;
+      color: #f4a261;
+      letter-spacing: 1px;
+    }
+
+    .game-wrapper {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(255,255,255,0.08);
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .scoreboard div {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .court {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      background: linear-gradient(180deg, #d8b07f 0%, #c28548 25%, #b06c2f 50%, #a05a25 100%);
+      border: 6px solid #b88042;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+    }
+
+
+
+    .backboard {
+      position: absolute;
+      left: 60px;
+      top: 228px;
+      width: 18px;
+      height: 18px;
+      background: #eaeaea;
+      border-radius: 50%;
+      border: 2px solid #999;
+      z-index: 3;
+    }
+
+    .rim {
+      position: absolute;
+      left: 38px;
+      top: 220px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #ff8f00;
+      border: 4px solid #dd6b0f;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.1);
+      z-index: 4;
+    }
+
+    .net {
+      position: absolute;
+      left: 38px;
+      top: 230px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.88);
+      z-index: 2;
+    }
+
+    .three-point-arc {
+      position: absolute;
+      left: -210px;
+      top: 8px;
+      width: 520px;
+      height: 472px;
+      border: 4px solid rgba(255,255,255,0.95);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .free-throw-circle {
+      position: absolute;
+      left: 15px;
+      top: 196px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.95);
+      z-index: 1;
+    }
+
+    .baseline {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 2px;
+      height: 4px;
+      background: rgba(255,255,255,0.95);
+      z-index: 1;
+    }
+
+    .topline {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 480px;
+      height: 4px;
+      background: rgba(255,255,255,0.95);
+      z-index: 1;
+    }
+
+    .sideline {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      width: 4px;
+      background: rgba(255,255,255,0.85);
+      z-index: 1;
+    }
+
+    .sideline.left {
+      left: 10px;
+    }
+
+    .sideline.right {
+      right: 10px;
+    }
+
+    .paint {
+      position: absolute;
+      left: 10px;
+      bottom: 164px;
+      width: 180px;
+      height: 160px;
+      border:6px solid rgba(255,255,255,0.85);
+      z-index: 1;
+    }
+
+    .ball {
+      position: absolute;
+      left: auto;
+      bottom: 148px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffbb50, #f6951d 55%, #c15a05 100%);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+      z-index: 5;
+      transition: none;
+    }
+
+    .ball::before,
+    .ball::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    .ball::before {
+      background: linear-gradient(90deg, transparent 47%, rgba(80,40,0,0.45) 48%, rgba(80,40,0,0.45) 52%, transparent 53%),
+                  radial-gradient(circle at 48% 24%, rgba(80,40,0,0.45) 0%, transparent 24%),
+                  radial-gradient(circle at 48% 76%, rgba(80,40,0,0.45) 0%, transparent 24%);
+    }
+
+    .ball::after {
+      background: radial-gradient(circle at 24% 50%, rgba(80,40,0,0.45) 2px, transparent 6px),
+                  radial-gradient(circle at 76% 50%, rgba(80,40,0,0.45) 2px, transparent 6px),
+                  linear-gradient(0deg, transparent 47%, rgba(80,40,0,0.45) 48%, rgba(80,40,0,0.45) 52%, transparent 53%);
+    }
+
+    .player-avatar {
+      position: absolute;
+      right: 40px;
+      bottom: 120px;
+      width: 92px;
+      height: 220px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .player-avatar .head {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #f7d7b7;
+      border: 2px solid rgba(0,0,0,0.14);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+      z-index: 5;
+    }
+
+    .player-avatar.curry .head {
+      background: #f4c7a7;
+    }
+
+    .player-avatar.lebron .head {
+      background: #a97858;
+    }
+
+    .player-avatar.shaquille .head {
+      background: #6b4128;
+    }
+
+    .player-avatar.curry .head::before,
+    .player-avatar.lebron .head::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 12px;
+      border-radius: 14px 14px 0 0;
+      background: #2c2a29;
+    }
+
+    .player-avatar.shaquille .head::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 18px #3d1f0f;
+    }
+
+    .player-avatar.lebron .head::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      transform: translateX(-50%);
+      width: 34px;
+      height: 10px;
+      border-radius: 0 0 14px 14px;
+      background: #3c2414;
+    }
+
+    .player-avatar .body {
+      position: absolute;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 92px;
+      background: #1056a7;
+      border-radius: 24px 24px 16px 16px;
+      box-shadow: inset 0 6px 0 rgba(255,255,255,0.15);
+    }
+
+    .player-avatar.curry .body {
+      background: #FDB927;
+    }
+
+    .player-avatar.curry .body::before,
+    .player-avatar.lebron .body::before,
+    .player-avatar.shaquille .body::before {
+      content: "";
+      position: absolute;
+      top: 18px;
+      width: 8px;
+      height: 56px;
+      border-radius: 6px;
+    }
+
+    .player-avatar.curry .body::before {
+      left: 10px;
+      background: #002d62;
+    }
+
+    .player-avatar.curry .body::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      right: 10px;
+      width: 8px;
+      height: 56px;
+      border-radius: 6px;
+      background: #002d62;
+    }
+
+    .player-avatar.lebron .body {
+      background: #552583;
+    }
+
+    .player-avatar.lebron .body::before {
+      left: 14px;
+      background: #f3c300;
+    }
+
+    .player-avatar.lebron .body::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      right: 14px;
+      width: 8px;
+      height: 56px;
+      border-radius: 6px;
+      background: #f3c300;
+    }
+
+    .player-avatar.shaquille .body {
+      width: 72px;
+      height: 108px;
+      top: 64px;
+      background: #FFD700;
+      border-radius: 28px 28px 18px 18px;
+    }
+
+    .player-avatar.shaquille .body::before {
+      left: 16px;
+      background: #bb9200;
+    }
+
+    .player-avatar.shaquille .body::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      right: 16px;
+      width: 8px;
+      height: 64px;
+      border-radius: 6px;
+      background: #bb9200;
+    }
+
+    .player-avatar .arm {
+      position: absolute;
+      width: 14px;
+      height: 70px;
+      border-radius: 10px;
+      top: 74px;
+    }
+
+    .player-avatar.curry .arm {
+      background: #f4c7a7;
+    }
+
+    .player-avatar.lebron .arm {
+      background: #a97858;
+    }
+
+    .player-avatar.shaquille .arm {
+      background: #6b4128;
+    }
+
+    .player-avatar .arm-left {
+      left: -6px;
+      transform: rotate(-30deg);
+    }
+
+    .player-avatar .arm-right {
+      right: -6px;
+      transform: rotate(30deg);
+    }
+
+    .player-avatar .jersey-number {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+    }
+
+    .player-avatar.curry .jersey-number {
+      color: #002d62;
+    }
+
+    .player-avatar.lebron .jersey-number {
+      color: #f3c300;
+    }
+
+    .player-avatar.shaquille .jersey-number {
+      color: #a16f00;
+    }
+
+    .player-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .player-label {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .shot-meter {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .meter-track {
+      position: relative;
+      width: 100%;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      overflow: hidden;
+    }
+
+    .meter-zone {
+      position: absolute;
+      left: 40%;
+      width: 20%;
+      top: 0;
+      bottom: 0;
+      background: rgba(118, 255, 147, 0.35);
+    }
+
+    .meter-indicator {
+      position: absolute;
+      top: 0;
+      width: 8px;
+      height: 100%;
+      background: #f77f00;
+      border-radius: 999px;
+      box-shadow: 0 0 8px rgba(247,127,0,0.65);
+      transform: translateX(-50%);
+      left: 0%;
+    }
+
+    .player-select {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .player-select button {
+      flex: 1 1 150px;
+      max-width: 200px;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .player-select button.selected {
+      background: #f77f00;
+      border-color: #f77f00;
+      color: #0b1020;
+    }
+
+    .message {
+      min-height: 32px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      border: none;
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #shootBtn {
+      background: #f77f00;
+      color: white;
+    }
+
+    #resetBtn {
+      background: #e63946;
+      color: white;
+    }
+
+    .instructions {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      text-align: center;
+      max-width: 700px;
+    }
+
+    @media (max-width: 700px) {
+      .court {
+        height: 380px;
+      }
+
+      .backboard {
+        left: 75px;
+        top: 105px;
+        height: 100px;
+      }
+
+      .rim {
+        left: 89px;
+        top: 170px;
+        width: 60px;
+      }
+
+      .net {
+        left: 99px;
+        top: 178px;
+        width: 40px;
+        height: 40px;
+      }
+
+      .paint {
+        width: 160px;
+        height: 140px;
+      }
+
+      .three-point-arc {
+        left: 80px;
+        width: 260px;
+        height: 260px;
+      }
+
+      .ball {
+        width: 36px;
+        height: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <a href="fromScratch.html" 
+   style="
+     display:inline-block;
+     margin-bottom:12px;
+     padding:10px 20px;
+     background:#f77f00;
+     color:white;
+     text-decoration:none;
+     font-weight:bold;
+     border-radius:10px;
+     transition:all 0.2s ease;
+   "
+   onmouseover="this.style.background='#ff9a2a'; this.style.transform='translateY(-2px)';"
+   onmouseout="this.style.background='#f77f00'; this.style.transform='translateY(0)';"
+   onmousedown="this.style.transform='translateY(1px)';"
+   onmouseup="this.style.transform='translateY(-2px)';"
+>
+  Go to From Scratch Page
+</a>
+    <br>
+    <br>
+    <h1>Basketball Shooting Game</h1>
+
+    <div class="scoreboard">
+      <div>Score: <span id="score">0</span></div>
+      <div>Attempts: <span id="attempts">0</span></div>
+      <div>FG%: <span id="percentage">0</span>%</div>
+    </div>
+
+    <div class="court" id="court">
+      <div class="floor-line"></div>
+      <div class="paint"></div>
+      <div class="free-throw-circle"></div>
+      <div class="restricted-area"></div>
+      <div class="three-point-arc"></div>
+      <div class="corner3-left"></div>
+      <div class="corner3-right"></div>
+      <div class="sideline left"></div>
+      <div class="sideline right"></div>
+      <div class="baseline"></div>
+      <div class="topline"></div>
+
+      <div class="backboard"></div>
+      <div class="rim"></div>
+      <div class="net" id="net"></div>
+
+      <div class="player-avatar curry" id="playerAvatar">
+        <div class="head"></div>
+        <div class="body">
+          <div class="jersey-number" id="jerseyNumber">30</div>
+        </div>
+        <div class="arm arm-left"></div>
+        <div class="arm arm-right"></div>
+      </div>
+
+      <div class="ball" id="ball"></div>
+    </div>
+
+    <div class="message" id="message">Press Shoot to take a shot.</div>
+
+    <div class="controls">
+      <button id="shootBtn">Shoot</button>
+      <button id="resetBtn">Reset Stats</button>
+    </div>
+
+    <div class="shot-meter" id="shotMeter">
+      <div class="meter-track" id="meterTrack">
+        <div class="meter-zone"></div>
+        <div class="meter-indicator" id="meterIndicator"></div>
+      </div>
+    </div>
+
+    <div class="player-panel">
+      <div class="player-label">Choose your shooter:</div>
+      <div class="player-select">
+        <button data-player="curry" class="selected">Steph Curry</button>
+        <button data-player="lebron">Lebron James</button>
+        <button data-player="shaquille">Shaquille O'Neal</button>
+      </div>
+    </div>
+
+    <div class="instructions">
+      Select a shooter and stop the meter in the green zone for the best chance to score.
+    </div>
+  </div>
+
+  <script>
+    const court = document.getElementById("court");
+    const ball = document.getElementById("ball");
+    const shootBtn = document.getElementById("shootBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const message = document.getElementById("message");
+    const playerAvatar = document.getElementById("playerAvatar");
+    const jerseyNumber = document.getElementById("jerseyNumber");
+    const playerButtons = document.querySelectorAll(".player-select button");
+    const meterTrack = document.getElementById("meterTrack");
+    const meterIndicator = document.getElementById("meterIndicator");
+
+    const scoreEl = document.getElementById("score");
+    const attemptsEl = document.getElementById("attempts");
+    const percentageEl = document.getElementById("percentage");
+    const meterZone = document.querySelector(".meter-zone");
+
+    const players = {
+      curry: {
+        name: "Steph Curry",
+        jersey: "30",
+        accuracy: 0.78,
+        avatarClass: "curry",
+        meterWidth: 30,
+        stats: { score: 0, attempts: 0 }
+      },
+      lebron: {
+        name: "Lebron James",
+        jersey: "23",
+        accuracy: 0.65,
+        avatarClass: "lebron",
+        meterWidth: 20,
+        stats: { score: 0, attempts: 0 }
+      },
+      shaquille: {
+        name: "Shaquille O'Neal",
+        jersey: "34",
+        accuracy: 0.52,
+        avatarClass: "shaquille",
+        meterWidth: 6,
+        stats: { score: 0, attempts: 0 }
+      }
+    };
+
+    let shotStage = "ready";
+    let selectedPlayer = "curry";
+    let meter = {
+      active: false,
+      position: 0,
+      direction: 1,
+      animationId: null
+    };
+
+    function updateMeterZone() {
+      const selected = players[selectedPlayer];
+      const width = selected.meterWidth;
+      meterZone.style.width = `${width}%`;
+      meterZone.style.left = `${(100 - width) / 2}%`;
+    }
+
+    function updateStats() {
+      const stats = players[selectedPlayer].stats;
+      scoreEl.textContent = stats.score;
+      attemptsEl.textContent = stats.attempts;
+      const pct = stats.attempts === 0 ? 0 : Math.round((stats.score / stats.attempts) * 100);
+      percentageEl.textContent = pct;
+    }
+
+    function clearMeterAnimation() {
+      if (meter.animationId) {
+        cancelAnimationFrame(meter.animationId);
+        meter.animationId = null;
+      }
+      meter.active = false;
+    }
+
+    function updatePlayerDisplay() {
+      const player = players[selectedPlayer];
+      playerAvatar.className = `player-avatar ${player.avatarClass}`;
+      jerseyNumber.textContent = player.jersey;
+      playerButtons.forEach((button) => {
+        button.classList.toggle("selected", button.dataset.player === selectedPlayer);
+      });
+      updateMeterZone();
+      if (shotStage === "ready") {
+        message.textContent = `Selected shooter: ${player.name}. Press Shoot to start.`;
+      }
+      updateStats();
+    }
+
+    function getBallStartValues() {
+      const courtRect = court.getBoundingClientRect();
+      const mobile = courtRect.width < 700;
+      const offset = mobile ? 130 : 160;
+      return {
+        left: Math.max(10, courtRect.width - offset),
+        bottom: mobile ? 150 : 168
+      };
+    }
+
+    function resetBall() {
+      const start = getBallStartValues();
+      ball.style.transition = "none";
+      ball.style.left = `${start.left}px`;
+      ball.style.bottom = `${start.bottom}px`;
+      ball.style.right = "auto";
+      ball.style.top = "auto";
+      ball.style.transform = "scale(1)";
+      meterIndicator.style.left = "0%";
+    }
+
+    function animateShot(madeShot) {
+      const courtRect = court.getBoundingClientRect();
+      const mobile = courtRect.width < 700;
+      const startLeft = parseFloat(ball.style.left) || getBallStartValues().left;
+      const startBottom = parseFloat(ball.style.bottom) || getBallStartValues().bottom;
+      const rimCenter = 44;
+      const rimRadius = 27;
+      const targetLeft = madeShot ? rimCenter : rimCenter + (Math.random() < 0.5 ? -rimRadius * 0.8 : rimRadius * 0.8);
+      const targetBottom = madeShot ? 220 : 200;
+      const keyframes = madeShot
+        ? [
+            { left: `${startLeft}px`, bottom: `${startBottom}px`, transform: "scale(1)" },
+            { left: `${startLeft - (mobile ? 58 : 78)}px`, bottom: `${startBottom + 14}px`, transform: "scale(0.96)" },
+            { left: `${rimCenter}px`, bottom: `${targetBottom}px`, transform: "scale(0.9)" }
+          ]
+        : [
+            { left: `${startLeft}px`, bottom: `${startBottom}px`, transform: "scale(1)" },
+            { left: `${startLeft - (mobile ? 50 : 70)}px`, bottom: `${startBottom + 12}px`, transform: "scale(0.97)" },
+            { left: `${targetLeft}px`, bottom: `${targetBottom}px`, transform: "scale(0.92)" },
+            { left: `${targetLeft + (targetLeft < rimCenter ? -26 : 26)}px`, bottom: `${targetBottom - 36}px`, transform: "scale(0.86)" }
+          ];
+
+      return new Promise((resolve) => {
+        const animation = ball.animate(keyframes, {
+          duration: 1450,
+          easing: "ease-in-out",
+          fill: "forwards"
+        });
+
+        animation.onfinish = () => {
+          const lastFrame = keyframes[keyframes.length - 1];
+          ball.style.left = lastFrame.left;
+          ball.style.bottom = lastFrame.bottom;
+          ball.style.transform = lastFrame.transform;
+          resolve();
+        };
+      });
+    }
+
+    function startMeter() {
+      meter.active = true;
+      meter.position = 0;
+      meter.direction = 1;
+      meterIndicator.style.left = "0%";
+
+      function step() {
+        if (!meter.active) return;
+        meter.position += meter.direction * 0.018;
+        if (meter.position >= 1) {
+          meter.position = 1;
+          meter.direction = -1;
+        }
+        if (meter.position <= 0) {
+          meter.position = 0;
+          meter.direction = 1;
+        }
+        meterIndicator.style.left = `${meter.position * 100}%`;
+        meter.animationId = requestAnimationFrame(step);
+      }
+
+      meter.animationId = requestAnimationFrame(step);
+    }
+
+    function getReleaseQuality(value) {
+      const selected = players[selectedPlayer];
+      const halfZone = (selected.meterWidth / 100) / 2;
+      const distance = Math.abs(value - 0.5);
+      if (distance > halfZone) return "poor";
+      if (distance < halfZone / 2) return "perfect";
+      return "good";
+    }
+
+    function getQualityModifier(quality) {
+      if (quality === "perfect") return 0.22;
+      if (quality === "good") return 0.08;
+      return -0.12;
+    }
+
+    function finishShot(quality) {
+      clearMeterAnimation();
+      shotStage = "animating";
+      shootBtn.disabled = true;
+      shootBtn.textContent = "Shoot";
+      const player = players[selectedPlayer];
+      const base = player.accuracy;
+      const chance = Math.min(Math.max(base + getQualityModifier(quality), 0.05), 0.96);
+      const madeShot = quality === "poor" ? false : Math.random() < chance;
+      const notes = {
+        perfect: "Perfect release!",
+        good: "Good release.",
+        poor: "Poor release."
+      };
+      message.textContent = notes[quality];
+
+      animateShot(madeShot).then(() => {
+        const stats = player.stats;
+        stats.attempts += 1;
+        if (madeShot) {
+          stats.score += 1;
+          message.textContent = "Swish! It went in.";
+        } else {
+          message.textContent = "Missed it.";
+        }
+        updateStats();
+        shotStage = "ready";
+        shootBtn.disabled = false;
+
+        setTimeout(() => {
+          resetBall();
+          updatePlayerDisplay();
+        }, 700);
+      });
+    }
+
+    function startShot() {
+      if (shotStage === "animating") return;
+      const player = players[selectedPlayer];
+
+      if (shotStage === "ready") {
+        shotStage = "meter";
+        shootBtn.textContent = "Release";
+        message.textContent = `${player.name} is loading the shot. Tap Shoot again in the green zone.`;
+        startMeter();
+      } else if (shotStage === "meter") {
+        const quality = getReleaseQuality(meter.position);
+        finishShot(quality);
+      }
+    }
+
+    function resetStats() {
+      clearMeterAnimation();
+      const stats = players[selectedPlayer].stats;
+      stats.score = 0;
+      stats.attempts = 0;
+      shotStage = "ready";
+      shootBtn.disabled = false;
+      shootBtn.textContent = "Shoot";
+      updateStats();
+      resetBall();
+      updatePlayerDisplay();
+      message.textContent = `Selected shooter: ${players[selectedPlayer].name}. Press Shoot to start.`;
+    }
+
+    playerButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedPlayer = button.dataset.player;
+        clearMeterAnimation();
+        shotStage = "ready";
+        updatePlayerDisplay();
+        resetBall();
+      });
+    });
+
+    shootBtn.addEventListener("click", startShot);
+    resetBtn.addEventListener("click", resetStats);
+
+    updateStats();
+    updatePlayerDisplay();
+    resetBall();
+  </script>
+</body>
+</html>
