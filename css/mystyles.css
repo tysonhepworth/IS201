@@ -26,13 +26,16 @@ img {
   width: 100%;
   display: flex;
   justify-content: center;
-  overflow-x: auto;
 }
 
 .tableauPlaceholder {
-  transform: scale(0.8);
-  transform-origin: top center;
-  height: 1000px;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.tableauPlaceholder object {
+  width: 100% !important;
+  height: 800px !important;
 }
 
 .section {
