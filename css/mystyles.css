@@ -23,8 +23,10 @@ img {
 }
 
 .tableau-container {
-  width: 120%;
+  width: 100%;
+  display: flex;
   justify-content: center;
+  overflow-x: auto;
 }
 
 .tableauPlaceholder {
